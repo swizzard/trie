@@ -1,6 +1,6 @@
 import unittest
 
-from trie import MutableTrie, Trie
+from src import MutableTrie, Trie
 
 
 class TestTrie(unittest.TestCase):

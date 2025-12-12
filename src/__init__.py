@@ -31,6 +31,10 @@ class Trie(Generic[TerminalValue, NonTerminal]):
     terminal_marker: NonTerminal
 
     def __init__(self, terminal_marker, children):
+        """Create a new `Trie`.
+        NOTE: This expects `cls.finalize` to have already been called on
+        `children`. Use `cls.from_dict` or `cls.from_items` instead.
+        """
         self.children = children
         self.terminal_marker = terminal_marker
 
@@ -183,7 +187,12 @@ class StringTrie(Trie[TerminalValue, str]):
     @classmethod
     def from_items(cls, items: Iterable[(str, TerminalValue)]):
         # `terminal_marker` is always the empty string
-        return super().from_items("", items)
+        children = cls.make_children()
+        for key, terminal in items:
+            level = cls.iter_key(children, key)
+            level[""] = terminal
+        frozen = cls.finalize(children)
+        return cls(frozen)
 
 
 class MutableStringTrie(StringTrie[TerminalValue], MutableTrie[TerminalValue, str]):
