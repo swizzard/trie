@@ -48,7 +48,7 @@ post-creation mutation.
 
 ```python
 >>> dct = {(1, 2, 3): 'A', (1, 2, 4): 'B', (2, 3, 4, 5): 'C'}
->>> trie = MutableTrie.from_dict(0, dct)  # Trie[int, str]
+>>> trie = MutableTrie.from_dict(0, dct)  # MutableTrie[int, str]
 >>> trie[(4, 5, 6)] = 'N'
 >>> trie[(4, 5, 6)]  # 'N'
 >>> del trie[(1, 2, 3)]
