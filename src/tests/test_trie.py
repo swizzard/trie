@@ -69,6 +69,22 @@ class TestTrie(unittest.TestCase):
         self.assertEqual(sub_trie.keys(), expected_keys)
         self.assertEqual(sub_trie.terminal_marker, trie.terminal_marker)
 
+    def test_prefixes(self):
+        dct = {self.A_KEY: self.A, self.B_KEY: self.B, self.C_KEY: self.C}
+        trie = Trie.from_dict(self.TERM, dct)
+        expected = [
+            [1],
+            [1, 2],
+            [1, 2, 3],
+            [1, 2, 3, 4],
+            [1, 2, 4],
+            [2],
+            [2, 2],
+            [2, 2, 5],
+        ]
+        actual = list(trie.prefixes())
+        self.assertEqual(actual, expected)
+
 
 class TestMutableTree(TestTrie):
     def test_setitem(self):

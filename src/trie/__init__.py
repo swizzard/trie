@@ -2,7 +2,7 @@
 
 from collections.abc import Iterable
 from collections import defaultdict
-from typing import Generic, Hashable, Self, TypeVar
+from typing import Hashable, Self, TypeVar
 
 __all__ = ["Trie", "MutableTrie", "StringTrie", "MutableStringTrie"]
 
@@ -16,7 +16,7 @@ class HashableIterable[NonTerminal](Iterable[NonTerminal], Hashable):
     pass
 
 
-class Trie(Generic[TerminalValue, NonTerminal]):
+class Trie[TerminalValue, NonTerminal]:
     """The Trie is generic in its leaves and in its branches.
     Branches are of type `NonTerminal`, leaves are of type `TerminalValue`
     "Keys" are `Iterable[NonTerminal]`.
@@ -140,6 +140,25 @@ class Trie(Generic[TerminalValue, NonTerminal]):
             [fst, *rest] = rest
         return curr_level[fst]
 
+    def _prefixes(self, k: Iterable[NonTerminal]) -> Iterable[Iterable[NonTerminal]]:
+        yield k
+        for key, value in self._subtrie(k).items():
+            if key == self.terminal_marker:
+                continue
+            k2 = k + key
+            yield from self._prefixes(k2)
+
+    def prefixes(self) -> Iterable[Iterable[NonTerminal]]:
+        for key in self.keys():
+            yield from self._prefixes(key)
+
+    def prefixes_from(
+        self, key: Iterable[NonTerminal]
+    ) -> Iterable[Iterable[NonTerminal]]:
+        gen = self._prefixes(key)
+        next(gen)  # skip `key`
+        yield from gen
+
 
 class MutableTrie(Trie[TerminalValue, NonTerminal]):
     """A `Trie` that can be modified after creation."""
@@ -200,3 +219,21 @@ class MutableStringTrie(StringTrie[TerminalValue], MutableTrie[TerminalValue, st
 
     def __init__(self, children):
         super(StringTrie).__init__(children)
+
+
+class TrieSet(Trie[bool, NonTerminal]):
+    def __init__(self, terminal_marker, children):
+        super().__init__(terminal_marker, children)
+
+    @classmethod
+    def from_keys(
+        cls, terminal_marker: NonTerminal, keys: Iterable[Iterable[NonTerminal]]
+    ) -> Self:
+        return cls.from_items((k, True) for k in keys)
+
+    def is_prefix(self, k: Iterable[NonTerminal]):
+        try:
+            self._subtrie(k)
+            return True
+        except KeyError:
+            return False
